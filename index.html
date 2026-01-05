@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Il Protocollo HTTP</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <h1>Il Protocollo HTTP</h1>
+        <p>Guida completa alla comunicazione web</p>
+    </header>
+
+    <nav>
+        <a href="#introduzione">Introduzione</a>
+        <a href="#messaggi">Messaggi</a>
+        <a href="#metodi">Metodi</a>
+        <a href="#codici">Codici di Stato</a>
+        <a href="#https">HTTPS</a>
+        <a href="#autenticazione">Autenticazione</a>
+    </nav>
+
+    <main>
+
+    <!-- INTRODUZIONE -->
+    <section id="introduzione">
+        <h2>1. Introduzione al Protocollo HTTP</h2>
+        
+        <p><strong>HTTP</strong> (HyperText Transfer Protocol) è un protocollo di livello applicativo che consente di inviare e ricevere risorse web (documenti, pagine, immagini, servizi) da un host chiamato <em>server</em> a un altro chiamato <em>client</em>.</p>
+
+        <p>HTTP è un protocollo di <strong>testo</strong> che opera sopra il livello di trasporto TCP/IP. Nella pila TCP/IP, HTTP si trova al livello <em>application</em>.</p>
+
+        <h3>Il Modello Client/Server</h3>
+        
+        <div class="box blue">
+            <h4>Client (Web Browser)</h4>
+            <p>I client sono elementi <strong>ATTIVI</strong>:</p>
+            <ul>
+                <li>Utilizzano il protocollo HTTP per connettersi ai server secondo un modello a <em>client attivo</em></li>
+                <li>Usano URL per identificare le risorse</li>
+                <li>Richiedono pagine web ai server e ne visualizzano il contenuto</li>
+                <li>Il client è il programma applicativo che stabilisce una connessione al fine di inviare delle richieste</li>
+            </ul>
+        </div>
+
+        <div class="box green">
+            <h4>Server (Web Server o HTTP Server)</h4>
+            <p>I server sono elementi <strong>PASSIVI</strong>:</p>
+            <ul>
+                <li>Rimangono in ascolto di connessioni client su una determinata porta TCP (default 80), secondo un modello a <em>server passivo</em></li>
+                <li>Utilizzano il protocollo HTTP per interagire con i client</li>
+                <li>Forniscono ai client le pagine web o le risorse richieste</li>
+                <li>Il server è il programma applicativo che accetta connessioni al fine di ricevere richieste e inviare risposte</li>
+            </ul>
+        </div>
+
+        <h3>URI e URL</h3>
+        
+        <p><strong>URI</strong> (Uniform Resource Identifier): è il "set generico di nomi o indirizzi che rappresentano stringhe assegnate alle risorse". Un URI è formato da due elementi separati dai due punti: lo <em>schema</em> e la <em>parte specifica</em>.</p>
+        
+        <p><strong>URL</strong> (Uniform Resource Locator): è un termine informale, usato nelle specifiche tecniche, associato a protocolli popolari come HTTP, FTP, mailto, ecc.</p>
+
+        <p><strong>URN</strong> (Uniform Resource Name): è un sottoinsieme di URI che rimane persistente anche quando la risorsa non è più disponibile.</p>
+
+        <p class="formula">URI = URL + URN</p>
+        
+        <h4>Struttura di un URL</h4>
+        <pre>schema://host:porta/path?query#fragment</pre>
+        
+        <table>
+            <tr><th>Componente</th><th>Descrizione</th><th>Esempio</th></tr>
+            <tr><td>schema</td><td>Identifica il protocollo</td><td>http, https, ftp</td></tr>
+            <tr><td>host</td><td>Identifica il server (nome simbolico o IP)</td><td>www.esempio.it, 80.123.34.56</td></tr>
+            <tr><td>porta</td><td>Opzionale (default 80 per http, 443 per https)</td><td>:8080</td></tr>
+            <tr><td>path</td><td>Identifica la risorsa sul server attraverso un percorso</td><td>/info/docenti/index.php</td></tr>
+            <tr><td>query</td><td>Passa informazioni dal client al server (es. dati form)</td><td>?id=123&nome=Mario</td></tr>
+            <tr><td>fragment</td><td>Identifica un punto preciso all'interno di un oggetto</td><td>#sezione2</td></tr>
+        </table>
+
+        <h3>Versioni del Protocollo HTTP</h3>
+        <table>
+            <tr><th>Versione</th><th>Anno</th><th>Caratteristiche principali</th></tr>
+            <tr><td>HTTP/1.0</td><td>1996</td><td>Protocollo <strong>stateless</strong>: né server né client mantengono informazioni sui messaggi precedenti. La connessione TCP viene chiusa dopo ogni risposta.</td></tr>
+            <tr><td>HTTP/1.1</td><td>1999</td><td>Connessioni <strong>persistenti</strong>: il server lascia aperta la connessione TCP dopo la risposta. Supporta la crittografia e il <strong>pipelining</strong>.</td></tr>
+            <tr><td>HTTP/2.0</td><td>2015</td><td>Riduce del 50% il tempo di caricamento delle pagine. Multiplexing delle richieste.</td></tr>
+        </table>
+
+        <h3>Sessioni HTTP</h3>
+        <p>Le sessioni HTTP sono basate sul protocollo TCP. Ecco la sequenza di comunicazione:</p>
+        <ol>
+            <li>Il <strong>server</strong> resta in ascolto sulla porta 80</li>
+            <li>Il <strong>client</strong> apre una connessione TCP (porta 80)</li>
+            <li>Il <strong>server</strong> accetta la connessione</li>
+            <li>Il <strong>client</strong> invia una richiesta (request) contenente un URL</li>
+            <li>Il <strong>server</strong> invia la risposta (response) al client</li>
+            <li>In HTTP 1.0 il server chiude la connessione; in HTTP 1.1 la connessione rimane aperta</li>
+        </ol>
+
+        <h3>Pipelining (HTTP 1.1)</h3>
+        <p>Con la tecnica del <strong>pipelining</strong> il client invia molteplici richieste prima di terminare la ricezione delle risposte. Le risposte devono essere inviate nello stesso ordine delle richieste (non esiste un metodo per associare richiesta e risposta).</p>
+        
+        <p>Il client effettua nuove richieste consecutive non appena incontra un nuovo riferimento (metodo <em>back-to-back</em>). Quando il server riceve le richieste, può inviare gli oggetti back-to-back.</p>
+
+        <h4>Connessione permanente</h4>
+        <p>Nella connessione HTTP permanente, il server chiude automaticamente la connessione nel caso di non utilizzo per un determinato tempo, chiamato <strong>intervallo di timeout</strong>.</p>
+        
+        <table>
+            <tr><th>Tipo</th><th>Descrizione</th></tr>
+            <tr><td>Non incanalata</td><td>Il client passa una nuova richiesta solo quando la risposta alla precedente è stata ricevuta</td></tr>
+            <tr><td>Incanalata (default in HTTP 1.1)</td><td>Le richieste vengono aggiunte a una coda chiamata <em>pipeline</em>, le risposte vengono processate nello stesso ordine</td></tr>
+        </table>
+    </section>
+
+    <!-- MESSAGGI -->
+    <section id="messaggi">
+        <h2>2. Struttura dei Messaggi HTTP</h2>
+        
+        <p>Durante una connessione HTTP, client e server si scambiano messaggi di <strong>richiesta</strong> (request) e di <strong>risposta</strong> (response). Entrambi sono formati da:</p>
+        
+        <ol>
+            <li><strong>Riga iniziale</strong>: Request line (per le richieste) o Status line (per le risposte)</li>
+            <li><strong>Header</strong> (intestazione): non obbligatoriamente presente, contiene metadati</li>
+            <li><strong>Riga vuota</strong>: separa header e body</li>
+            <li><strong>Body</strong> (corpo del messaggio): non obbligatoriamente presente, contiene i dati effettivi</li>
+        </ol>
+
+        <h3>Messaggio di Richiesta (HTTP Request)</h3>
+        
+        <p>Una HTTP request è un messaggio testuale inviato dal client al server ed è formato da:</p>
+        <ul>
+            <li><strong>Riga di richiesta</strong>: contiene Metodo, URI, Versione HTTP</li>
+            <li><strong>Header HTTP</strong>: informazioni per l'identificazione del messaggio</li>
+            <li><strong>Body</strong>: dati effettivi da trasmettere (es. input di programmi, dati form)</li>
+        </ul>
+
+        <h4>Esempio di Request</h4>
+        <pre>GET /home/pallaDiPelle.html HTTP/1.1
+Host: www.apollo.it
+Connection: close
+User-Agent: Chrome/37.0
+Accept: text/html, image/*
+Accept-Language: it</pre>
+
+        <p>In questo esempio:</p>
+        <ul>
+            <li>La <strong>Request line</strong> contiene il metodo GET, l'oggetto richiesto e la versione del protocollo</li>
+            <li>Le <strong>Header lines</strong> contengono Host, Connection (close = chiudi la connessione al termine), User-Agent, Accept, Accept-Language</li>
+            <li>Il <strong>body è vuoto</strong> (tipico delle richieste GET)</li>
+        </ul>
+
+        <h4>Campi della riga di richiesta</h4>
+        <table>
+            <tr><th>Campo</th><th>Descrizione</th><th>Valori possibili</th></tr>
+            <tr><td>Metodo</td><td>Azione da eseguire</td><td>GET, POST, PUT, DELETE, HEAD, OPTIONS, TRACE, CONNECT</td></tr>
+            <tr><td>URI/URL</td><td>Identificativo della risorsa richiesta</td><td>/pagina.html, /api/utenti</td></tr>
+            <tr><td>Versione</td><td>Versione del protocollo HTTP</td><td>HTTP/1.0, HTTP/1.1</td></tr>
+        </table>
+
+        <h3>Messaggio di Risposta (HTTP Response)</h3>
+        
+        <p>La response è organizzata come la richiesta, con l'unica differenza che inizia con una <strong>riga di stato</strong> al posto della riga di richiesta.</p>
+
+        <h4>Esempio di Response</h4>
+        <pre>HTTP/1.1 200 OK
+Connection: close
+Date: Thu, 02 Aug 2020 11:10:25 GMT
+Server: Apache/3.5.0 (Unix)
+Last-Modified: Mon, 22 Jun 2020 ...
+Content-Length: 2821
+Content-Type: text/html
+
+&lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 5.2 Transitional//EN"&gt;
+&lt;html&gt;...&lt;/html&gt;</pre>
+
+        <p>In questo esempio:</p>
+        <ul>
+            <li>La <strong>Status line</strong> contiene la versione del protocollo (HTTP/1.1), il codice di stato (200) e la status phrase (OK)</li>
+            <li>Le <strong>Header lines</strong> contengono Date, Server, Last-Modified, Content-Length, Content-Type</li>
+            <li>Il <strong>body</strong> contiene la pagina HTML richiesta</li>
+        </ul>
+
+        <h3>Intestazioni HTTP (Header)</h3>
+        
+        <p>Le header sono formate da coppie <code>nome_header: valore</code> e sono classificate in:</p>
+        <ul>
+            <li><strong>Intestazioni generali</strong>: informazioni sulla trasmissione</li>
+            <li><strong>Intestazioni della richiesta</strong>: informazioni sulla richiesta effettuata</li>
+            <li><strong>Intestazioni della risposta</strong>: informazioni sulla risposta generata</li>
+            <li><strong>Intestazioni dell'entità</strong>: informazioni sul corpo del messaggio</li>
+        </ul>
+
+        <h4>Header comuni nelle Request</h4>
+        <table>
+            <tr><th>Header</th><th>Descrizione</th><th>Esempio</th></tr>
+            <tr><td>Host</td><td>Nome del server destinazione (obbligatorio in HTTP/1.1)</td><td>Host: www.esempio.it</td></tr>
+            <tr><td>User-Agent</td><td>Informazioni sul browser/client</td><td>User-Agent: Mozilla/5.0</td></tr>
+            <tr><td>Accept</td><td>Tipi MIME di contenuto accettati dal client</td><td>Accept: text/html, application/json</td></tr>
+            <tr><td>Accept-Language</td><td>Lingue preferite</td><td>Accept-Language: it, en</td></tr>
+            <tr><td>Accept-Encoding</td><td>Codifiche accettate (compressione)</td><td>Accept-Encoding: gzip, deflate</td></tr>
+            <tr><td>Connection</td><td>Gestione della connessione</td><td>Connection: keep-alive</td></tr>
+        </table>
+
+        <h4>Header comuni nelle Response</h4>
+        <table>
+            <tr><th>Header</th><th>Descrizione</th><th>Esempio</th></tr>
+            <tr><td>Content-Type</td><td>Tipo MIME del contenuto inviato</td><td>Content-Type: text/html; charset=utf-8</td></tr>
+            <tr><td>Content-Length</td><td>Dimensione del body in byte</td><td>Content-Length: 2821</td></tr>
+            <tr><td>Server</td><td>Informazioni sul software del server</td><td>Server: Apache/2.4.41</td></tr>
+            <tr><td>Date</td><td>Data e ora della risposta</td><td>Date: Mon, 05 Jan 2026 10:00:00 GMT</td></tr>
+            <tr><td>Last-Modified</td><td>Data ultima modifica della risorsa</td><td>Last-Modified: Sun, 04 Jan 2026 15:30:00 GMT</td></tr>
+        </table>
+
+        <h3>Le Rappresentazioni HTTP</h3>
+        <p>La rappresentazione della risorsa HTTP è un'informazione che riguarda:</p>
+        <ul>
+            <li>La risorsa (indirizzo di localizzazione)</li>
+            <li>Il formato della risorsa</li>
+            <li>Lo stato della risorsa attuale e nella sua evoluzione futura</li>
+        </ul>
+        
+        <p>I <strong>metadati</strong> rappresentano informazioni sulla risorsa (dimensione, tipo MIME, data ultima modifica) ma non appartengono alla risorsa stessa.</p>
+
+        <h4>Formato JSON nella Response</h4>
+        <p>Per richiedere una risposta in formato JSON, si usa l'header:</p>
+        <pre>Accept: application/json</pre>
+        <p>Il server risponderà con:</p>
+        <pre>Content-Type: application/json
+
+{"nome": "Mario", "cognome": "Rossi", "eta": 30}</pre>
+    </section>
+
+    <!-- METODI -->
+    <section id="metodi">
+        <h2>3. Metodi (Verbi) HTTP</h2>
+        
+        <p>I <strong>metodi</strong> (o verbi) sono attributi di una richiesta HTTP che indicano le intenzioni del client. Sono indicati in maiuscolo nella prima riga della request.</p>
+
+        <h3>Metodi principali e operazioni CRUD</h3>
+        <p>Le API RESTful (REpresentational State Transfer) utilizzano i metodi HTTP per eseguire operazioni <strong>CRUD</strong> (Create, Retrieve, Update, Delete) sui dati presenti nei server.</p>
+
+        <table>
+            <tr><th>Operazione CRUD</th><th>Metodo HTTP</th><th>Descrizione</th></tr>
+            <tr class="row-green"><td>Create</td><td><strong>POST</strong></td><td>Crea dati sul server</td></tr>
+            <tr class="row-blue"><td>Retrieve</td><td><strong>GET</strong></td><td>Chiede dati al server (lettura)</td></tr>
+            <tr class="row-orange"><td>Update</td><td><strong>PUT</strong></td><td>Modifica o sostituisce dati sul server</td></tr>
+            <tr class="row-red"><td>Delete</td><td><strong>DELETE</strong></td><td>Cancella un oggetto sul server</td></tr>
+        </table>
+
+        <h3>Metodo GET</h3>
+        <p>Il metodo GET richiede una risorsa a un server ordinando di trasmettere al client le informazioni identificate nell'URL. Una richiesta GET è di <strong>sola lettura</strong>, ma il client può operare sui dati ricevuti.</p>
+
+        <pre>GET /pathname HTTP/1.1</pre>
+
+        <p>Il metodo GET prevede il passaggio di parametri nella sezione <code>&lt;query&gt;</code> dell'URL, ma la lunghezza massima di un URL è limitata.</p>
+
+        <h4>Tipi di richiesta GET</h4>
+        <table>
+            <tr><th>Tipo</th><th>Descrizione</th><th>Header usati</th></tr>
+            <tr><td>Assoluto</td><td>La risorsa viene richiesta senza altre specificazioni</td><td>-</td></tr>
+            <tr><td>Condizionale</td><td>La risorsa viene richiesta se viene soddisfatto un criterio</td><td>If-Match, If-Modified-Since, If-Range</td></tr>
+            <tr><td>Parziale</td><td>Si richiede solo una parte di una risorsa memorizzata</td><td>Range</td></tr>
+        </table>
+
+        <h4>Funzionamento</h4>
+        <ol>
+            <li>Il client invia: <code>GET URI</code></li>
+            <li>Il server risponde con codice di stato <strong>200 OK</strong> e i dati nel body</li>
+            <li>Se il server non può inviare l'oggetto, inserisce un opportuno codice di errore</li>
+        </ol>
+
+        <h3>Metodo POST</h3>
+        <p>A differenza di GET, i dettagli di identificazione ed elaborazione della risorsa non sono nell'URL ma nel <strong>body message</strong>. POST viene spesso usato per inviare i dati di un form HTML.</p>
+
+        <pre>POST /cgi-bin/rates.cgi HTTP/1.1
+Host: nes:8192
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 93
+
+Account=cs111fall&First=richard&Last=martin&SSN=123456789&Bday=01011980&State=CreateAccount</pre>
+
+        <h4>Caratteristiche di POST</h4>
+        <ul>
+            <li>Un blocco di dati viene inviato nel <strong>corpo del messaggio</strong></li>
+            <li>Vi sono header che descrivono il corpo: <code>Content-Type</code> e <code>Content-Length</code></li>
+            <li>L'URI richiesto non è una risorsa da prelevare, ma un <strong>programma</strong> (es. CGI) per gestire i dati</li>
+            <li>La risposta viene generata <strong>dinamicamente</strong> come output del programma</li>
+            <li><strong>Non esistono limiti di lunghezza</strong> nei parametri della richiesta</li>
+        </ul>
+
+        <h4>Risposte del server a POST</h4>
+        <table>
+            <tr><th>Codice</th><th>Significato</th></tr>
+            <tr><td>200 OK</td><td>I dati sono stati ricevuti e viene restituita una risposta</td></tr>
+            <tr><td>201 Created</td><td>I dati sono stati ricevuti e la risorsa è stata creata</td></tr>
+            <tr><td>204 No Content</td><td>I dati sono stati ricevuti ma non viene restituita risposta</td></tr>
+        </table>
+
+        <h3>Metodo PUT</h3>
+        <p>Il metodo PUT chiede la <strong>memorizzazione</strong> sul server di una risorsa all'URL specificato. A differenza di POST, si ha la creazione di una risorsa: l'argomento di PUT è la risorsa che ci si aspetta di ottenere facendo un GET con lo stesso nome in seguito.</p>
+
+        <pre>PUT /avviso.txt HTTP/1.1
+Host: scuolaonline.it
+Content-Type: text/plain
+Content-Length: 80
+
+Il 12/3/2020 non ci sarà lezione.</pre>
+
+        <h4>Risposte del server a PUT</h4>
+        <ul>
+            <li><strong>201 Created</strong>: la risorsa è stata creata</li>
+            <li><strong>200 OK</strong>: la risorsa esistente è stata sostituita</li>
+            <li><strong>204 No Content</strong>: operazione completata senza risposta</li>
+        </ul>
+
+        <p>PUT è <strong>idempotente</strong> (ripetere la stessa richiesta produce lo stesso risultato) ma non offre garanzie di controllo degli accessi o locking.</p>
+
+        <h3>Differenza tra POST e PUT</h3>
+        <table>
+            <tr><th>Aspetto</th><th>POST</th><th>PUT</th></tr>
+            <tr><td>URI identifica</td><td>La risorsa che <strong>gestirà</strong> i dati inviati</td><td>La risorsa <strong>inviata</strong> nel body</td></tr>
+            <tr><td>URI tipico</td><td>Programma o script</td><td>Percorso o nome di un file</td></tr>
+            <tr><td>Idempotente</td><td>No</td><td>Sì</td></tr>
+            <tr><td>Uso tipico</td><td>Invio form, elaborazione dati</td><td>Upload file, creazione risorse</td></tr>
+        </table>
+
+        <h3>Metodo DELETE</h3>
+        <p>Il metodo DELETE richiede l'eliminazione della risorsa all'URI specificata. Non vi è garanzia che venga effettivamente cancellata, anche con risposta 200 OK.</p>
+
+        <pre>DELETE /file.txt HTTP/1.1
+Host: www.scuolaonline.it</pre>
+
+        <h4>Risposte del server a DELETE</h4>
+        <ul>
+            <li><strong>200 OK</strong>: la risposta include un'entità che descrive lo stato</li>
+            <li><strong>202 Accepted</strong>: l'azione non è stata ancora effettuata</li>
+            <li><strong>204 No Content</strong>: l'azione è stata effettuata ma la risposta non include un'entità</li>
+            <li><strong>405 Method Not Allowed</strong>: il metodo DELETE non è autorizzato per quella risorsa</li>
+        </ul>
+
+        <h3>Differenze tra GET e POST</h3>
+        <table>
+            <tr><th>Aspetto</th><th>GET</th><th>POST</th></tr>
+            <tr><td>Posizione dati</td><td>Nell'URL (query string)</td><td>Nel body del messaggio</td></tr>
+            <tr><td>Lunghezza dati</td><td>Limitata (~2000 caratteri)</td><td>Nessun limite pratico</td></tr>
+            <tr><td>Visibilità</td><td>Dati visibili nell'URL e nella cronologia</td><td>Dati non visibili nell'URL</td></tr>
+            <tr><td>Cache</td><td>Può essere memorizzato in cache</td><td>Non viene memorizzato in cache</td></tr>
+            <tr><td>Segnalibri</td><td>Può essere salvato nei preferiti</td><td>Non può essere salvato nei preferiti</td></tr>
+            <tr><td>Sicurezza</td><td>Meno sicuro (dati nell'URL)</td><td>Più sicuro (ma non crittografato)</td></tr>
+            <tr><td>Uso tipico</td><td>Recupero dati, ricerche</td><td>Invio form, upload file, login</td></tr>
+        </table>
+
+        <h3>Altri Metodi HTTP</h3>
+
+        <h4>HEAD</h4>
+        <p>HEAD è una variante di GET usata per testing e debugging. Il server risponde <strong>solo con il codice di stato e le header</strong>, senza il body.</p>
+        <p>Usato per verificare:</p>
+        <ul>
+            <li><strong>Validità</strong>: se la risorsa esiste e non è di dimensione 0</li>
+            <li><strong>Accessibilità</strong>: se è accessibile senza autenticazione</li>
+            <li><strong>Coerenza cache</strong>: se la risorsa nella cache è ancora valida</li>
+        </ul>
+
+        <h4>OPTIONS</h4>
+        <p>Usato per verificare le capacità di un server web o per determinare la versione HTTP supportata.</p>
+        <pre>OPTIONS /file.txt HTTP/1.1</pre>
+        <p>Il server risponde con l'elenco dei metodi consentiti per quella risorsa.</p>
+
+        <h4>TRACE</h4>
+        <p>Richiesta diagnostica per verificare il percorso di rete. Il server risponde copiando il messaggio TRACE nel body della risposta. Utile quando ci sono server intermedi (proxy) che aggiungono l'header <code>Via</code> al messaggio.</p>
+
+        <h4>CONNECT</h4>
+        <p>Riservato all'uso con proxy per creare un tunnel sicuro (es. comunicazione SSL).</p>
+
+        <h3>URL Encoding</h3>
+        <p>L'<strong>URL encode</strong> è una procedura che codifica una stringa di dati in modo che venga riconosciuta durante la trasmissione HTTP. Viene utilizzata nelle QueryString per inserire negli URL stringhe di testo conformi allo standard.</p>
+
+        <h4>Passaggi per la codifica</h4>
+        <ol>
+            <li>Convertire i caratteri non sicuri in <code>%xx</code> (dove xx è il valore ASCII esadecimale)</li>
+            <li>Sostituire gli spazi con <code>%20</code></li>
+            <li>Unire nomi e valori con <code>=</code> e separare le coppie con <code>&</code></li>
+        </ol>
+
+        <h4>Esempio</h4>
+        <p>Stringa originale: <code>A scuola ho imparato che 1+1=2</code></p>
+        <p>Stringa codificata: <code>A%20scuola%20ho%20imparato%20che%201%2B1%3D2</code></p>
+        <p>Nell'URL: <code>pagina.php?stringa=A%20scuola%20ho%20imparato%20che%201%2B1%3D2</code></p>
+
+        <h4>Tabella caratteri principali</h4>
+        <table>
+            <tr><th>Carattere</th><th>Codifica</th><th>Carattere</th><th>Codifica</th><th>Carattere</th><th>Codifica</th></tr>
+            <tr><td>spazio</td><td>%20</td><td>=</td><td>%3D</td><td>&</td><td>%26</td></tr>
+            <tr><td>+</td><td>%2B</td><td>?</td><td>%3F</td><td>#</td><td>%23</td></tr>
+            <tr><td>/</td><td>%2F</td><td>@</td><td>%40</td><td>%</td><td>%25</td></tr>
+        </table>
+    </section>
+
+    <!-- CODICI DI STATO -->
+    <section id="codici">
+        <h2>4. Codici di Stato HTTP</h2>
+        
+        <p>I <strong>codici di stato</strong> (status code) sono codici restituiti dai server HTTP per indicare al client l'esito di una richiesta. Sono definiti dall'IETF (Internet Engineering Task Force) e sono formati da 3 cifre.</p>
+
+        <h3>Categorie di codici</h3>
+        <table>
+            <tr><th>Range</th><th>Categoria</th><th>Descrizione</th></tr>
+            <tr class="row-blue"><td>100-199</td><td>Informational</td><td>Informazioni temporanee durante lo svolgimento della richiesta. Dall'HTTP 1.0 è sconsigliato il loro utilizzo.</td></tr>
+            <tr class="row-green"><td>200-299</td><td>Successful</td><td>Indicano il completamento di una richiesta con successo.</td></tr>
+            <tr class="row-orange"><td>300-399</td><td>Redirection</td><td>Indicano stati (non di errore) che richiedono un trattamento particolare da parte del browser.</td></tr>
+            <tr class="row-red"><td>400-499</td><td>Client Error</td><td>Indicano condizioni di errore provocate dal comportamento del client.</td></tr>
+            <tr class="row-purple"><td>500-599</td><td>Server Error</td><td>Indicano errori verificatisi sul server.</td></tr>
+        </table>
+
+        <h3>Codici 2xx - Successo</h3>
+        <table>
+            <tr><th>Codice</th><th>Nome</th><th>Descrizione</th></tr>
+            <tr><td>200</td><td>OK</td><td>La richiesta è stata elaborata con successo. La risposta contiene i dati richiesti.</td></tr>
+            <tr><td>201</td><td>Created</td><td>La richiesta ha portato alla creazione di una nuova risorsa.</td></tr>
+            <tr><td>202</td><td>Accepted</td><td>La richiesta è stata accettata ma non ancora elaborata.</td></tr>
+            <tr><td>204</td><td>No Content</td><td>La richiesta è stata elaborata con successo ma non c'è contenuto da restituire.</td></tr>
+        </table>
+
+        <h3>Codici 3xx - Reindirizzamento</h3>
+        <table>
+            <tr><th>Codice</th><th>Nome</th><th>Descrizione</th></tr>
+            <tr><td>301</td><td>Moved Permanently</td><td>La risorsa è stata spostata definitivamente a un nuovo URL.</td></tr>
+            <tr><td>302</td><td>Found</td><td>La risorsa è temporaneamente disponibile a un altro URL.</td></tr>
+            <tr><td>304</td><td>Not Modified</td><td>La risorsa non è stata modificata dalla versione in cache.</td></tr>
+        </table>
+
+        <h3>Codici 4xx - Errori del Client</h3>
+        <table>
+            <tr><th>Codice</th><th>Nome</th><th>Descrizione</th></tr>
+            <tr><td>400</td><td>Bad Request</td><td>La richiesta non è valida o è malformata.</td></tr>
+            <tr><td>401</td><td>Unauthorized</td><td>È richiesta l'autenticazione per accedere alla risorsa.</td></tr>
+            <tr><td>403</td><td>Forbidden</td><td>L'accesso alla risorsa è negato (anche se autenticati).</td></tr>
+            <tr><td>404</td><td>Not Found</td><td>La risorsa richiesta non esiste sul server.</td></tr>
+            <tr><td>405</td><td>Method Not Allowed</td><td>Il metodo HTTP usato non è permesso per quella risorsa.</td></tr>
+            <tr><td>408</td><td>Request Timeout</td><td>Il server ha atteso troppo a lungo la richiesta del client.</td></tr>
+        </table>
+
+        <h3>Codici 5xx - Errori del Server</h3>
+        <table>
+            <tr><th>Codice</th><th>Nome</th><th>Descrizione</th></tr>
+            <tr><td>500</td><td>Internal Server Error</td><td>Errore generico del server durante l'elaborazione.</td></tr>
+            <tr><td>501</td><td>Not Implemented</td><td>Il server non supporta la funzionalità richiesta.</td></tr>
+            <tr><td>502</td><td>Bad Gateway</td><td>Il server ha ricevuto una risposta non valida da un server upstream.</td></tr>
+            <tr><td>503</td><td>Service Unavailable</td><td>Il server è temporaneamente non disponibile (manutenzione o sovraccarico).</td></tr>
+            <tr><td>504</td><td>Gateway Timeout</td><td>Il server non ha ricevuto risposta in tempo da un server upstream.</td></tr>
+        </table>
+    </section>
+
+    <!-- HTTPS -->
+    <section id="https">
+        <h2>5. HTTPS e Sicurezza</h2>
+        
+        <p><strong>HTTPS</strong> (HyperText Transfer Protocol Secure) aggiunge un livello di sicurezza a HTTP utilizzando i protocolli <strong>SSL</strong> (Secure Sockets Layer) e <strong>TLS</strong> (Transport Layer Security).</p>
+
+        <h3>Confronto HTTP vs HTTPS</h3>
+        <table>
+            <tr><th>Caratteristica</th><th>HTTP</th><th>HTTPS</th></tr>
+            <tr><td>Porta TCP</td><td>80</td><td>443</td></tr>
+            <tr><td>Dati</td><td>Trasmessi in chiaro</td><td>Crittografati</td></tr>
+            <tr><td>Sicurezza</td><td>Vulnerabile ad attacchi</td><td>Protetto</td></tr>
+            <tr><td>Certificato</td><td>Non richiesto</td><td>Richiesto (SSL/TLS)</td></tr>
+        </table>
+
+        <h3>Protezione dalle minacce</h3>
+        <p>I dati scambiati tra client e server sono protetti da:</p>
+        
+        <div class="box orange">
+            <h4>Eavesdropping (intercettazione)</h4>
+            <p>Ascolto non autorizzato delle comunicazioni tra client e server.</p>
+        </div>
+
+        <div class="box orange">
+            <h4>Tampering (manomissione)</h4>
+            <p>Manomissione della comunicazione falsandone i contenuti. Gli utenti non si accorgono di comunicare con server malevoli che possono carpire i loro dati.</p>
+        </div>
+
+        <div class="box orange">
+            <h4>Man-in-the-Middle</h4>
+            <p>Un attaccante si interpone tra client e server, intercettando e potenzialmente modificando la comunicazione.</p>
+        </div>
+
+        <h3>Come funziona SSL/TLS</h3>
+        <p>SSL e TLS utilizzano una combinazione di crittografia simmetrica e asimmetrica:</p>
+        
+        <ol>
+            <li><strong>Handshake</strong>: client e server negoziano gli algoritmi di crittografia da usare</li>
+            <li><strong>Scambio chiavi</strong>: viene usata la crittografia a <strong>chiave asimmetrica</strong> (es. RSA) per scambiare in modo sicuro una chiave simmetrica</li>
+            <li><strong>Comunicazione</strong>: i dati vengono crittografati con algoritmo a <strong>chiave simmetrica</strong> (es. AES), più veloce della crittografia asimmetrica</li>
+        </ol>
+
+        <p>Questo garantisce che <strong>solo client e server</strong> siano in grado di conoscere il contenuto della comunicazione, impedendo a terze parti di leggere, inserire o modificare i messaggi.</p>
+
+        <h3>Autenticazione TLS</h3>
+
+        <h4>Autenticazione Unilaterale (più comune)</h4>
+        <p>Solo il <strong>server</strong> viene autenticato. Il client rimane anonimo.</p>
+        <ul>
+            <li>Il browser valida il certificato del server verificando la firma digitale</li>
+            <li>Usa i certificati delle autorità di certificazione (CA) conosciute</li>
+            <li>Al termine, il browser mostra l'icona del <strong>lucchetto</strong></li>
+            <li>Attenzione: il lucchetto non garantisce che il sito sia quello richiesto! È necessario analizzare il certificato digitale.</li>
+        </ul>
+
+        <h4>Mutual Authentication (MA) - Autenticazione bilaterale</h4>
+        <p>Sia <strong>server</strong> che <strong>client</strong> si autenticano scambiandosi i certificati digitali.</p>
+        <ul>
+            <li>Richiede che anche il client possieda un proprio certificato digitale</li>
+            <li>Usata in contesti ad alta sicurezza (es. home banking, servizi governativi)</li>
+        </ul>
+    </section>
+
+    <!-- AUTENTICAZIONE -->
+    <section id="autenticazione">
+        <h2>6. Autenticazione HTTP</h2>
+        
+        <p>L'<strong>autenticazione</strong> è il processo che consente di stabilire se un client è idoneo per accedere a una risorsa protetta. Il protocollo HTTP supporta l'autenticazione come mezzo per negoziare l'accesso.</p>
+
+        <h3>Meccanismo di autenticazione</h3>
+        <p>L'autenticazione avviene mediante il browser che svolge le seguenti fasi:</p>
+        <ol>
+            <li>In base al tipo di autenticazione, richiede <strong>username e password</strong> all'utente</li>
+            <li>Genera una <strong>header</strong> contenente le credenziali di accesso</li>
+            <li>Utilizza l'header per <strong>tutte le richieste successive</strong> alle risorse</li>
+        </ol>
+        <p>Il meccanismo è simile a quello dei cookie: le informazioni di autenticazione sono scambiate nelle header HTTP.</p>
+
+        <h3>Tecniche di autenticazione</h3>
+
+        <h4>1. Filtro su indirizzi IP (IAAF)</h4>
+        <p>IP Address Authentication Filter: si basa sul riconoscimento dell'indirizzo IP del client.</p>
+        
+        <p><strong>Limitazioni:</strong></p>
+        <ul>
+            <li>Non funziona quando l'IP del client non è pubblico (NAT)</li>
+            <li>Non funziona quando l'IP è assegnato dinamicamente (DHCP)</li>
+            <li>Vulnerabile all'<strong>IP Spoofing</strong></li>
+        </ul>
+
+        <div class="box red">
+            <h4>IP Spoofing</h4>
+            <p>Tecnica che permette a utenti malintenzionati di mostrare al server un indirizzo IP fasullo. Modificando il campo Source Address con un IP falso, si può far credere al server che la richiesta provenga da un altro client.</p>
+            <p><strong>Tipi di attacco:</strong></p>
+            <ul>
+                <li><strong>Non cieco</strong>: l'attaccante cerca di farsi passare per un host nella stessa sottorete LAN</li>
+                <li><strong>Cieco</strong>: l'attaccante cerca di farsi passare per un host di una qualsiasi sottorete</li>
+                <li><strong>DoS</strong>: l'attaccante cerca di bloccare un host per impedirne la normale attività o prenderne il controllo</li>
+            </ul>
+        </div>
+
+        <h4>2. HTTP Basic Authentication (BA)</h4>
+        <p>Utilizzata da tutti i browser moderni. Il server può rifiutare una transazione invitando il client a inviare username e password.</p>
+
+        <p><strong>Funzionamento (paradigma challenge-response):</strong></p>
+        <ol>
+            <li>Il client richiede una risorsa protetta</li>
+            <li>Il server risponde con <code>401 Unauthorized</code> e header <code>WWW-Authenticate: Basic</code></li>
+            <li>Il browser chiede username e password all'utente</li>
+            <li>Il client invia le credenziali codificate in <strong>Base64</strong> nell'header <code>Authorization</code></li>
+            <li>Se l'autenticazione ha esito positivo, il server invia la risorsa</li>
+            <li>Se l'esito è negativo, viene ripetuta la procedura challenge-response</li>
+        </ol>
+
+        <pre>Authorization: Basic dXNlcm5hbWU6cGFzc3dvcmQ=</pre>
+
+        <div class="box orange">
+            <p><strong>Attenzione!</strong> La coppia username:password codificata in Base64 è facilmente decodificabile perché <strong>Base64 non è crittografia</strong>! Se qualcuno "sniffa" il canale, può sottrarre i dati. Il protocollo HTTPS rende questa autenticazione più sicura.</p>
+        </div>
+
+        <h4>3. HTTP Digest Authentication (DA)</h4>
+        <p>Il server non riceve la password dal client, ma solo un <strong>digest</strong> (riassunto) della password per verificare se corrisponde a quella in suo possesso.</p>
+
+        <p><strong>Funzioni di hashing:</strong></p>
+        <ul>
+            <li>Convertono un messaggio di lunghezza qualunque in una sequenza a lunghezza fissa (es. 128 bit)</li>
+            <li>Stringhe identiche generano lo stesso hash</li>
+            <li>La funzione è <strong>one-way</strong>: da un hash è impossibile risalire al messaggio originale</li>
+        </ul>
+
+        <p><strong>Funzionamento:</strong></p>
+        <ol>
+            <li>Il client richiede una risorsa protetta</li>
+            <li>Il server risponde con <code>401 Unauthorized</code>, un <strong>nonce</strong> (numero casuale) e altri parametri</li>
+            <li>Il client calcola un hash combinando username, password, nonce, metodo HTTP e URI</li>
+            <li>Il client invia l'hash (response) al server</li>
+            <li>Il server calcola lo stesso hash e confronta i risultati</li>
+        </ol>
+
+        <h3>Confronto BA vs DA</h3>
+        <table>
+            <tr><th>Caratteristica</th><th>Basic (BA)</th><th>Digest (DA)</th></tr>
+            <tr><td>Password trasmessa</td><td class="bad">In Base64 (facilmente leggibile)</td><td class="good">Solo hash (non leggibile)</td></tr>
+            <tr><td>Protezione replay attack</td><td class="bad">No</td><td class="good">Sì (tramite nonce)</td></tr>
+            <tr><td>Verifica identità server</td><td class="bad">No</td><td class="good">Parziale (stesso server della challenge)</td></tr>
+            <tr><td>Complessità</td><td>Semplice</td><td>Più complessa</td></tr>
+            <tr><td>Richiede HTTPS</td><td>Fortemente consigliato</td><td>Consigliato</td></tr>
+        </table>
+
+        <h3>Paradigma Challenge-Response</h3>
+        <p>Sia BA che DA utilizzano il paradigma <strong>challenge-response</strong>, articolato in tre passi:</p>
+        <ol>
+            <li>Il client invia l'<strong>identificativo</strong> dell'utente al server</li>
+            <li>Il server genera un numero casuale chiamato <strong>challenge</strong> (R), trasmesso al client. R rappresenta la "sfida" da superare.</li>
+            <li>Il client accetta la sfida inviando un valore <strong>trasformato</strong> di R:
+                <ul>
+                    <li>Può essere il risultato di una codifica di R con una chiave</li>
+                    <li>Oppure una concatenazione di R con la password e applicazione di una funzione di digest</li>
+                </ul>
+            </li>
+        </ol>
+
+        <h3>Replay Attack</h3>
+        <div class="box red">
+            <p>Il <strong>replay attack</strong> è commesso da un attaccante che si interpone tra client e server. L'attaccante:</p>
+            <ol>
+                <li>Intercetta le credenziali comunicate dal client</li>
+                <li>Le ripropone successivamente simulando l'identità del client legittimo</li>
+            </ol>
+            <p>La <strong>Digest Authentication</strong> previene questo attacco usando un <strong>nonce diverso per ogni richiesta</strong>: anche se l'attaccante intercetta la risposta, non potrà riutilizzarla perché il nonce sarà cambiato.</p>
+        </div>
+
+        <h3>Vantaggi della Digest Authentication</h3>
+        <ul>
+            <li>La password <strong>non viene mai inviata in chiaro</strong></li>
+            <li>Grazie al <strong>nonce</strong>, vengono evitati attacchi di tipo replay</li>
+            <li>Il client può verificare che il server sia lo stesso che ha richiesto la challenge (protezione da server malevoli)</li>
+        </ul>
+
+        <p><strong>Limitazione:</strong> con la DA non è possibile verificare l'identità del server, ma solo che sia lo stesso soggetto che ha generato la challenge.</p>
+    </section>
+
+    </main>
+
+    <footer>
+        <p>Guida al Protocollo HTTP - Materiale didattico</p>
+        <p>Basato sui contenuti delle lezioni UA2</p>
+    </footer>
+
+</body>
+</html>
